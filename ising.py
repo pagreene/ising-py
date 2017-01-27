@@ -8,10 +8,7 @@ import os
 from py_queue import Queuer
 from datetime import datetime
 from copy import copy
-<<<<<<< HEAD
 from time import sleep
-=======
->>>>>>> a208f51af09a8059a93227fb9f1c13dcc21e0277
 
 def getProcInfo():
     '''
@@ -115,23 +112,16 @@ class IsingLattice(object):
         # spin at index j.
         return np.array([E_divby_sj, -E_divby_sj])
     
-<<<<<<< HEAD
     def lowlevel_cSettle(self, N, seed=None):
-=======
-    def lowlevel_cSettle(self, N):
->>>>>>> a208f51af09a8059a93227fb9f1c13dcc21e0277
         '''
         This function should perform the exact same function as settle,
         however it calls a method written in c, which should make it MUCH
         faster. There is some translation that needs to be done first though.
         '''
         # Pass the stuff to the c code.
-<<<<<<< HEAD
         if seed is None:
             seed = np.random.randint(0,100000)
         
-=======
->>>>>>> a208f51af09a8059a93227fb9f1c13dcc21e0277
         csettle = self.lib.settle
         csettle(ctypes.c_void_p(self.s.ctypes.data),
                 ctypes.c_int(self.L),
@@ -139,24 +129,14 @@ class IsingLattice(object):
                 ctypes.c_double(self.h),
                 ctypes.c_double(self.J),
                 ctypes.c_double(self.b),
-<<<<<<< HEAD
                 ctypes.c_int(seed),
-=======
-                ctypes.c_int(np.random.randint(0,100000)),
->>>>>>> a208f51af09a8059a93227fb9f1c13dcc21e0277
                 ctypes.c_int(N) )
         
         # This is an unfortunate workaround that is needed. There is some
         # type incompatability issue, I think.
-<<<<<<< HEAD
         self.s[abs(self.s) > 1] = -np.sign(self.s[abs(self.s) > 1])
         
         #self.fixInts(self.s)
-=======
-        #self.s[abs(self.s) > 1] = -np.sign(self.s[abs(self.s) > 1])
-        
-        self.fixInts(self.s)
->>>>>>> a208f51af09a8059a93227fb9f1c13dcc21e0277
         return
     
     def plotMeasures(self):
@@ -202,11 +182,7 @@ class IsingLattice(object):
             return mFullArr, sArr
     
     def cSettle(self, N, trackFuncList = None, nTrack = None, showy = False, 
-<<<<<<< HEAD
                 baseName=None, verbose = True, seed = None, eoFlip = False):
-=======
-                endOnFlip = False):
->>>>>>> a208f51af09a8059a93227fb9f1c13dcc21e0277
         '''
         Settles faster using c
         
@@ -220,11 +196,7 @@ class IsingLattice(object):
             number of shows.
         showy -- (T/F) If True, then show plots as you go along. The
             number of plots plots is given by nTrack
-<<<<<<< HEAD
         eoFlip -- (T/F) if True, end when the magnetization becomes
-=======
-        endOnFlip -- (T/F) if True, end when the magnetization becomes
->>>>>>> a208f51af09a8059a93227fb9f1c13dcc21e0277
             negative.
         '''
         # Make a list to track any values that need to be tracked.
@@ -245,12 +217,8 @@ class IsingLattice(object):
         try:
             # Run through the settling, while measuring.
             for n in range(nTrack):
-<<<<<<< HEAD
                 if verbose:
                     print n
-=======
-                print n
->>>>>>> a208f51af09a8059a93227fb9f1c13dcc21e0277
                  
                 # Make the measurement(s)
                 if trackFuncList is not None:
@@ -267,33 +235,22 @@ class IsingLattice(object):
                 
                 # Check to see if the spins have flipped, and end if that's what
                 # the user wanted.
-<<<<<<< HEAD
                 if eoFlip and self.cGetm() < 0:
                     break
                 
                 # Settle some more
                 self.lowlevel_cSettle(N/nTrack, seed=seed)
-=======
-                if endOnFlip and self.cGetm() < 0:
-                    break
-                
-                # Settle some more
-                self.lowlevel_cSettle(N/nTrack)
->>>>>>> a208f51af09a8059a93227fb9f1c13dcc21e0277
         except:
             print "We encountered a problem. Attempting to return the measures."
             raise
         finally:
             # If nothing was tracked, return None
             if trackFuncList is not None:
-<<<<<<< HEAD
                 if baseName:
                     for i, measureArr in enumerate(self.measureList):
                         np.save("%s_%s" % (baseName,trackFuncList[i].func_name),
                                 measureArr)
                 
-=======
->>>>>>> a208f51af09a8059a93227fb9f1c13dcc21e0277
                 ret = self.measureList
             else:
                 ret = None
@@ -317,12 +274,8 @@ class IsingLattice(object):
         fig = mplot.figure(10000)
         
         # Make the plot
-<<<<<<< HEAD
         ret = mplot.imshow(self.s, *arg, interpolation='none', vmin = -1, vmax = 1,
                            **kwarg)
-=======
-        ret = mplot.imshow(self.s, *arg, interpolation='none', vmin = -1, vmax = 1,                             **kwarg)
->>>>>>> a208f51af09a8059a93227fb9f1c13dcc21e0277
         
         # Go back to the old figure (If I ever changed)
         if replaceFig:
@@ -335,11 +288,7 @@ class IsingLattice(object):
         return cgetM(ctypes.c_void_p(self.s.ctypes.data), 
                      ctypes.c_int(self.L))
     
-<<<<<<< HEAD
     def cGetInterVal(self):
-=======
-    def cGetInteVal(self):
->>>>>>> a208f51af09a8059a93227fb9f1c13dcc21e0277
         cgetInterVal = self.lib.getInterVal
         return cgetInterVal(ctypes.c_void_p(self.s.ctypes.data),
                             ctypes.c_int(self.L),
@@ -383,11 +332,7 @@ class IsingLattice(object):
                          ctypes.c_double(self.h))
         
         self.fixInts(iLatt)
-<<<<<<< HEAD
         return iLatt/(float(2*R + 1)**2)
-=======
-        return iLatt
->>>>>>> a208f51af09a8059a93227fb9f1c13dcc21e0277
     
     def cGetInterSpin(self, i, j):
         cGetInterSpin = self.lib.getInterSpin
@@ -535,7 +480,6 @@ class Cluster(object):
     def addSite(self, site):
         self.sites.append(site)
 
-<<<<<<< HEAD
 fnamePatt = "Run_%%03d"
 def settleMany(I, nRuns, nIter, nTrack, nProcs, verbose = False, eoFlip = False,
                 clean = False, trackFuncList = None, retFuncList = None):
@@ -579,30 +523,10 @@ def settleMany(I, nRuns, nIter, nTrack, nProcs, verbose = False, eoFlip = False,
     
     # Add things to the loop.
     print "Running the simulations..."
-=======
-def settleMany(I, nRuns, nIter, nProcs, verbose=False):
-    '''
-    Given a scenario where there may be a nucleating droplet, run from
-    `nRuns' settles from that same point using different random seeds
-    to determine if we really are at the nucleating droplet.
-    
-    I -- Ising object with lattice at supposed critical droplet.
-    nRuns -- the number of different runs
-    nIter -- the number of iterations for each run. Note that an "iteration"
-             here actionally L^2 iterations, in other words in one iteration,
-             every spin should have been touched an average of once.
-    '''
-    Q = Queuer(nProcs)
-    Q.startMonitor()
-    
-    print "Running the simulations..."
-    myDir = datetime.now().strftime("Outputs/batch_%Y%m%d-%H%M%S")
->>>>>>> a208f51af09a8059a93227fb9f1c13dcc21e0277
     os.mkdir(myDir)
     for i in range(nRuns):
         Q.addToQueue(I.cSettle, 
                      nIter*I.L**2, 
-<<<<<<< HEAD
                      trackFuncList = trackFuncList, 
                      nTrack = nTrack,
                      baseName = basename % i,
@@ -739,21 +663,6 @@ def generateTrainingData(nStart, nIter, nTrack, h, R, maxBack=50, minBack=0):
                     print "They're all collapsing now, no need to keep going"
                     break
             
-=======
-                     trackFuncList = [I.cGetm, I.getLatticeCopy], 
-                     nTrack = nIter,
-                     baseName = "%s/Run_%d" % (myDir,i),
-                     seed = np.random.randint(0,100000),
-                     verbose = verbose)
-    Q.waitForAll()
-    
-    print "Compiling the data..."
-    ret = []
-    for i in range(nRuns):
-        m = np.load("%s/Run_%d_cGetm.npy" % (myDir, i))
-        ret.append(m.copy())
-    
->>>>>>> a208f51af09a8059a93227fb9f1c13dcc21e0277
     return ret
 
 def makeGif(sArr, name, start = 0, end = -1, loc = '.', 
@@ -788,10 +697,7 @@ def makeGif(sArr, name, start = 0, end = -1, loc = '.',
     for i, s in enumerate(sArr[start:end]):
         fig.clf()
         mplot.imshow(s, interpolation = 'none', vmin = vmin, vmax = vmax, **kwargs)
-<<<<<<< HEAD
         mplot.colorbar()
-=======
->>>>>>> a208f51af09a8059a93227fb9f1c13dcc21e0277
         mplot.title("Timestep: %d" % (start + i))
         fig.savefig(loc + newTmpDir + "/%04d" % i)
         print "Saved at iteration", i
@@ -800,7 +706,6 @@ def makeGif(sArr, name, start = 0, end = -1, loc = '.',
     os.system("convert -delay 50 -loop 0 %s%s/*.png %s.gif" % (loc,newTmpDir,name))
     
     return
-<<<<<<< HEAD
 
 def xData(data, a, R):
     '''
@@ -835,5 +740,3 @@ def renorm(X, L):
         for j in range(L):
             Xnew[i,j] = mean(X[N*i:N*(i+1),N*j:N*(j+1)])
     return Xnew
-=======
->>>>>>> a208f51af09a8059a93227fb9f1c13dcc21e0277
