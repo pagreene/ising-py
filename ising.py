@@ -27,10 +27,17 @@ def getProcInfo():
     return infoDict
 
 class IsingLattice(object):
+    '''
+    This object is the primary workhorse of this code. The methods of this
+    object control the actions that can be taken on the lattice, by changing
+    the boltzman factor `b` (for `beta`), the magnetic field `h`, the
+    interaction strength `J`, and the interaction radius `R`. The dimensions
+    of the lattice are set at instantiation, but cannot be changed.
+    '''
     def __init__(self, J, h, L, b, R):
         self.J = J
         self.h = h
-        self.L = L
+        self.__L = L
         self.b = b
         self.R = R
         
@@ -53,10 +60,10 @@ class IsingLattice(object):
         adjust the index such that it remains in the boundary. Currently,
         torroidal cyclic boundary conditions are implemented.
         '''
-        if j >= self.L:
-            j -= self.L
+        if j >= self.__L:
+            j -= self.__L
         elif j < 0:
-            j += self.L
+            j += self.__L
         return j
     
     def fixInts(self, cArr):
@@ -124,7 +131,7 @@ class IsingLattice(object):
         
         csettle = self.lib.settle
         csettle(ctypes.c_void_p(self.s.ctypes.data),
-                ctypes.c_int(self.L),
+                ctypes.c_int(self.__L),
                 ctypes.c_int(self.R),
                 ctypes.c_double(self.h),
                 ctypes.c_double(self.J),
@@ -158,7 +165,7 @@ class IsingLattice(object):
         sArr = None
         try:
             for n in range(nBatch):
-                mArr, sArr = self.cSettle(nIterPerBatch*self.L**2, 
+                mArr, sArr = self.cSettle(nIterPerBatch*self.__L**2, 
                                  trackFuncList = [self.cGetm, self.getLatticeCopy],
                                  nTrack = nTrackPerBatch)
                 mFullArr[n*nTrackPerBatch:(n+1)*nTrackPerBatch] = mArr[:]
@@ -286,12 +293,12 @@ class IsingLattice(object):
     def cGetM(self):
         cgetM = self.lib.getM 
         return cgetM(ctypes.c_void_p(self.s.ctypes.data), 
-                     ctypes.c_int(self.L))
+                     ctypes.c_int(self.__L))
     
     def cGetInterVal(self):
         cgetInterVal = self.lib.getInterVal
         return cgetInterVal(ctypes.c_void_p(self.s.ctypes.data),
-                            ctypes.c_int(self.L),
+                            ctypes.c_int(self.__L),
                             ctypes.c_int(self.R))
     
     def cGetInterLattice(self, R=None):
@@ -327,7 +334,7 @@ class IsingLattice(object):
         cgetInterLattice = self.lib.getInterLattice
         cgetInterLattice(ctypes.c_void_p(self.s.ctypes.data),
                          ctypes.c_void_p(iLatt.ctypes.data),
-                         ctypes.c_int(self.L),
+                         ctypes.c_int(self.__L),
                          ctypes.c_int(R),
                          ctypes.c_double(self.h))
         
@@ -337,7 +344,7 @@ class IsingLattice(object):
     def cGetInterSpin(self, i, j):
         cGetInterSpin = self.lib.getInterSpin
         return cGetInterSpin(ctypes.c_void_p(self.s.ctypes.data),
-                             ctypes.c_int(self.L),
+                             ctypes.c_int(self.__L),
                              ctypes.c_int(self.R),
                              ctypes.c_int(i),
                              ctypes.c_int(j))
@@ -346,7 +353,7 @@ class IsingLattice(object):
         return sum(self.s.flatten())
     
     def cGetm(self):
-        return float(self.cGetM())/self.L**2
+        return float(self.cGetM())/self.__L**2
     
     def cGetmLattice(self, R = None):
         if R is None:
@@ -358,7 +365,7 @@ class IsingLattice(object):
         
         cGetMLatt(ctypes.c_void_p(self.s.ctypes.data),
                   ctypes.c_void_p(MLatt.ctypes.data),
-                  ctypes.c_int(self.L),
+                  ctypes.c_int(self.__L),
                   ctypes.c_int(R))
         
         self.fixInts(MLatt)
@@ -366,7 +373,7 @@ class IsingLattice(object):
                             
     
     def getm(self):
-        return float(self.getM())/self.L**2
+        return float(self.getM())/self.__L**2
     
     def getLatticeCopy(self):
         return self.s.copy()
@@ -526,7 +533,7 @@ def settleMany(I, nRuns, nIter, nTrack, nProcs, verbose = False, eoFlip = False,
     os.mkdir(myDir)
     for i in range(nRuns):
         Q.addToQueue(I.cSettle, 
-                     nIter*I.L**2, 
+                     nIter*I.getL()**2, 
                      trackFuncList = trackFuncList, 
                      nTrack = nTrack,
                      baseName = basename % i,
@@ -593,7 +600,7 @@ class IsingData(IsingLattice):
             psList = []
         self.psList = psList
         
-        self.L = L
+        self.__L = L
         self.R = defaultR
         self.s = None
         self.J = 0
